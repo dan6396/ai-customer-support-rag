@@ -1,0 +1,43 @@
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+.env.local
+credentials.json
+token.json
+
+# Node / JS
+node_modules/
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+
+# Eval cache
+eval/.cache/
+
+# Claude local settings
+.claude/settings.local.json
+
+# Temporary files
+.tmp/
+.DS_Store
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
