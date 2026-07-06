@@ -4,15 +4,6 @@
 
 > 포트폴리오 목적의 MVP입니다. 단순 API 연결보다 **한국어 RAG에서 실제로 생기는 검색 누락과 환각 문제를 어떻게 줄였는지**에 초점을 맞췄습니다.
 
-## 문제와 해결
-
-| 문제 | 적용한 방식 | 결과 |
-|---|---|---|
-| 문서에 없는 답을 지어내는 환각 | 검색 결과가 없으면 LLM 호출 없이 고정 폴백 + 생성 프롬프트 가드 | 근거 없는 질문은 "자료에 없음"으로 응답 |
-| "깎아주나요", "책값" 같은 한국어 구어체 검색 누락 | query expansion + 원본/확장 질문 max-pool 검색 | 평가셋 recall **86% → 100%** |
-| 학원별 문서가 섞이면 안 되는 멀티테넌트 문제 | `owner_id` 기반 저장 + 검색 RPC에서 tenant scope 필터 | 사용자/위젯별 문서 범위 분리 |
-| 소상공인의 설치 부담 | `<script>` 한 줄 iframe 위젯 | 외부 사이트 CSS와 충돌하지 않는 임베드 챗봇 |
-
 ## 화면
 
 | 랜딩 | 대시보드: 문서 등록 + 챗봇 테스트 |
@@ -22,6 +13,26 @@
 | 위젯 | 검색 품질 개선 |
 |---|---|
 | ![단답 위젯 미리보기](docs/screenshots/widget-preview.jpg) | ![질문 확장 개선 결과](portfolio-diagrams/chart_improvement.png) |
+
+## 기술 선택 이유
+
+| 기술 | 이유 |
+|---|---|
+| Express + TypeScript | RAG API를 단순한 구조로 분리하고 타입 안정성 확보 |
+| Supabase Auth | 별도 인증 서버 없이 사용자 식별과 tenant 기준 확보 |
+| Postgres + pgvector | 문서 메타데이터, tenant, 벡터 검색을 한 DB에서 관리 |
+| Voyage `voyage-multilingual-2` | 한국어 검색 품질과 query/document 비대칭 임베딩 활용 |
+| OpenAI `gpt-4o-mini` | 고객지원 답변 생성에서 비용과 한국어 품질의 균형 |
+| Next.js + iframe widget | 대시보드/위젯 UI 구현, 외부 사이트 CSS 충돌 최소화 |
+
+## 문제와 해결
+
+| 문제 | 적용한 방식 | 결과 |
+|---|---|---|
+| 문서에 없는 답을 지어내는 환각 | 검색 결과가 없으면 LLM 호출 없이 고정 폴백 + 생성 프롬프트 가드 | 근거 없는 질문은 "자료에 없음"으로 응답 |
+| "깎아주나요", "책값" 같은 한국어 구어체 검색 누락 | query expansion + 원본/확장 질문 max-pool 검색 | 평가셋 recall **86% → 100%** |
+| 학원별 문서가 섞이면 안 되는 멀티테넌트 문제 | `owner_id` 기반 저장 + 검색 RPC에서 tenant scope 필터 | 사용자/위젯별 문서 범위 분리 |
+| 소상공인의 설치 부담 | `<script>` 한 줄 iframe 위젯 | 외부 사이트 CSS와 충돌하지 않는 임베드 챗봇 |
 
 ## 아키텍처
 
@@ -44,17 +55,6 @@ flowchart LR
 ```
 
 핵심 흐름은 `backend/src/lib/rag.ts`에 있습니다. 질문을 격식체로 재작성한 뒤 원본 질문과 확장 질문을 모두 검색하고, 같은 청크는 더 높은 similarity를 채택합니다.
-
-## 기술 선택 이유
-
-| 기술 | 이유 |
-|---|---|
-| Express + TypeScript | RAG API를 단순한 구조로 분리하고 타입 안정성 확보 |
-| Supabase Auth | 별도 인증 서버 없이 사용자 식별과 tenant 기준 확보 |
-| Postgres + pgvector | 문서 메타데이터, tenant, 벡터 검색을 한 DB에서 관리 |
-| Voyage `voyage-multilingual-2` | 한국어 검색 품질과 query/document 비대칭 임베딩 활용 |
-| OpenAI `gpt-4o-mini` | 고객지원 답변 생성에서 비용과 한국어 품질의 균형 |
-| Next.js + iframe widget | 대시보드/위젯 UI 구현, 외부 사이트 CSS 충돌 최소화 |
 
 ## RAG 평가
 
